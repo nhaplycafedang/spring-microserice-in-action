@@ -18,9 +18,11 @@ public class UserContextInterceptor implements ClientHttpRequestInterceptor {
             HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
 
+    	logger.debug("[Special] start intercept");
         HttpHeaders headers = request.getHeaders();
         headers.add(UserContext.CORRELATION_ID, UserContextHolder.getContext().getCorrelationId());
         headers.add(UserContext.AUTH_TOKEN, UserContextHolder.getContext().getAuthToken());
+        headers.add("special", "1");
 
         return execution.execute(request, body);
     }

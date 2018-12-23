@@ -22,6 +22,7 @@ public class UserContextFilter implements Filter {
             throws IOException, ServletException {
 
 
+    	logger.debug("[License] Start filter");
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
 
         UserContextHolder.getContext().setCorrelationId(  httpServletRequest.getHeader(UserContext.CORRELATION_ID) );

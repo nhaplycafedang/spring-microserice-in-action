@@ -28,6 +28,7 @@ public class FilterUtils {
     public void setCorrelationId(String correlationId){
         RequestContext ctx = RequestContext.getCurrentContext();
         ctx.addZuulRequestHeader(CORRELATION_ID, correlationId);
+        ctx.addZuulRequestHeader("filter", "1");
     }
 
     public  final String getOrgId(){

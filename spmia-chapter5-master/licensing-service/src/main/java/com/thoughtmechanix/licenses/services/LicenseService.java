@@ -21,6 +21,7 @@ import java.util.UUID;
 @Service
 public class LicenseService {
     private static final Logger logger = LoggerFactory.getLogger(LicenseService.class);
+    private static long start = System.currentTimeMillis();
     @Autowired
     private LicenseRepository licenseRepository;
 
@@ -44,7 +45,17 @@ public class LicenseService {
                 .withComment(config.getExampleProperty());
     }
 
-    @HystrixCommand
+    @HystrixCommand(threadPoolKey = "organizationThreadPool",
+            threadPoolProperties =
+        {@HystrixProperty(name = "coreSize",value="30"),
+         @HystrixProperty(name="maxQueueSize", value="2")},
+commandProperties={
+		 @HystrixProperty(name="execution.isolation.thread.timeoutInMilliseconds", value="1000"),
+         @HystrixProperty(name="circuitBreaker.requestVolumeThreshold", value="30"),
+         @HystrixProperty(name="circuitBreaker.errorThresholdPercentage", value="50"),
+         @HystrixProperty(name="circuitBreaker.sleepWindowInMilliseconds", value="5000"),
+         @HystrixProperty(name="metrics.rollingStats.timeInMilliseconds", value="10000"),
+         @HystrixProperty(name="metrics.rollingStats.numBuckets", value="5")})
     private Organization getOrganization(String organizationId) {
         return organizationRestClient.getOrganization(organizationId);
     }
@@ -54,7 +65,9 @@ public class LicenseService {
 
       int randomNum = rand.nextInt((3 - 1) + 1) + 1;
 
-      if (randomNum==3) sleep();
+      if (randomNum==3) {
+    	  sleep();
+      }
     }
 
     private void sleep(){
@@ -62,22 +75,25 @@ public class LicenseService {
             Thread.sleep(11000);
         } catch (InterruptedException e) {
             e.printStackTrace();
+            System.out.println(System.currentTimeMillis() - start);
         }
     }
 
     @HystrixCommand(//fallbackMethod = "buildFallbackLicenseList",
             threadPoolKey = "licenseByOrgThreadPool",
             threadPoolProperties =
-                    {@HystrixProperty(name = "coreSize",value="30"),
-                     @HystrixProperty(name="maxQueueSize", value="10")},
+                    {@HystrixProperty(name = "coreSize",value="3"),
+                     @HystrixProperty(name="maxQueueSize", value="2")},
             commandProperties={
+            		 @HystrixProperty(name="execution.isolation.thread.timeoutInMilliseconds", value="12000"),
                      @HystrixProperty(name="circuitBreaker.requestVolumeThreshold", value="10"),
-                     @HystrixProperty(name="circuitBreaker.errorThresholdPercentage", value="75"),
-                     @HystrixProperty(name="circuitBreaker.sleepWindowInMilliseconds", value="7000"),
-                     @HystrixProperty(name="metrics.rollingStats.timeInMilliseconds", value="15000"),
+                     @HystrixProperty(name="circuitBreaker.errorThresholdPercentage", value="50"),
+                     @HystrixProperty(name="circuitBreaker.sleepWindowInMilliseconds", value="5000"),
+                     @HystrixProperty(name="metrics.rollingStats.timeInMilliseconds", value="10000"),
                      @HystrixProperty(name="metrics.rollingStats.numBuckets", value="5")}
     )
     public List<License> getLicensesByOrg(String organizationId){
+    	start = System.currentTimeMillis();
         logger.debug("LicenseService.getLicensesByOrg  Correlation id: {}", UserContextHolder.getContext().getCorrelationId());
         randomlyRunLong();
 

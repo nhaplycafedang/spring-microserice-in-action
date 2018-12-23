@@ -13,6 +13,11 @@ public class OrganizationRestTemplateClient {
     RestTemplate restTemplate;
 
     public Organization getOrganization(String organizationId){
+    	try {
+			Thread.sleep(7000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
         ResponseEntity<Organization> restExchange =
                 restTemplate.exchange(
                         "http://organizationservice/v1/organizations/{organizationId}",
